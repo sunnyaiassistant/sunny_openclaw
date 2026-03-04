@@ -5,36 +5,23 @@
     <title>TERMINAL - BBG</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #000000;
-            --bloomberg: #ff9900;
-            --bloomberg-dim: #cc7a00;
-            --green: #00ff00;
-            --red: #ff0000;
-            --border: #331a00;
-            --highlight: #1a0d00;
-        }
+        :root { --bg: #000000; --bloomberg: #ff9900; --bloomberg-dim: #cc7a00; --green: #00ff00; --red: #ff0000; --border: #331a00; --highlight: #1a0d00; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--bloomberg); font-size: 11px; height: 100vh; overflow: hidden; }
-        
         .topbar { background: var(--bloomberg); color: black; padding: 4px 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; }
         .layout { display: grid; grid-template-columns: 160px 1fr 300px; height: calc(100vh - 24px); }
         .panel { background: var(--bg); border: 1px solid var(--border); margin: 1px; padding: 4px; overflow: hidden; }
         .panel-title { background: var(--bloomberg); color: black; padding: 2px 6px; font-weight: bold; font-size: 10px; margin: -4px -4px 4px -4px; }
-        
         .sidebar { font-size: 10px; }
         .menu-item { padding: 4px 8px; cursor: pointer; display: flex; justify-content: space-between; }
         .menu-item:hover, .menu-item.active { background: var(--highlight); }
         .menu-key { color: var(--bloomberg-dim); font-size: 9px; }
-        
         .search-bar { display: flex; gap: 4px; margin-bottom: 6px; }
         .search-input { background: var(--bg); border: 1px solid var(--bloomberg-dim); color: var(--bloomberg); padding: 3px 6px; font-family: inherit; font-size: 10px; width: 100%; }
         .search-input:focus { outline: none; border-color: var(--bloomberg); }
-        
         .ticker { display: flex; gap: 20px; overflow-x: auto; padding: 4px 0; }
         .ticker-item { white-space: nowrap; cursor: pointer; font-size: 10px; }
         .ticker-item:hover { color: #ffcc00; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 10px; }
         th { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--bloomberg-dim); color: var(--bloomberg-dim); }
         td { padding: 3px 6px; border-bottom: 1px solid #1a0d00; cursor: pointer; }
@@ -42,12 +29,10 @@
         .num { text-align: right; }
         .pos { color: var(--green); }
         .neg { color: var(--red); }
-        
         .badge { font-size: 8px; padding: 1px 4px; border-radius: 2px; margin-left: 4px; }
         .badge-us { background: #003366; }
         .badge-hk { background: #660000; }
         .badge-crypto { background: #330066; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0d0d0d; border: 2px solid var(--bloomberg); width: 90%; max-width: 900px; max-height: 90vh; overflow: auto; }
@@ -58,47 +43,40 @@
         .chart-controls { display: flex; gap: 8px; margin-bottom: 12px; }
         .chart-btn { background: var(--bg); border: 1px solid var(--bloomberg-dim); color: var(--bloomberg); padding: 4px 12px; cursor: pointer; font-family: inherit; font-size: 10px; }
         .chart-btn:hover, .chart-btn.active { background: var(--bloomberg); color: black; }
-        
         .detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 10px; margin-top: 12px; }
         .stat { padding: 4px; background: var(--bg); }
         .stat-label { color: var(--bloomberg-dim); font-size: 9px; }
         .status { display: flex; justify-content: space-between; padding: 2px 6px; font-size: 9px; color: var(--bloomberg-dim); }
         .live-indicator { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-right: 4px; animation: pulse 1s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
-        
-        /* News styles */
-        .news-item { padding: 6px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .news-item { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 10px; cursor: pointer; }
         .news-item:hover { background: var(--highlight); }
-        .news-headline { font-size: 10px; margin-bottom: 2px; }
+        .news-headline { margin-bottom: 2px; }
         .news-meta { font-size: 9px; color: var(--bloomberg-dim); }
-        .news-source { color: var(--bloomberg); }
-        .news-loading { color: var(--bloomberg-dim); font-size: 9px; }
     </style>
 </head>
 <body>
     <div class="topbar">
         <span>◇ TERMINAL &lt;GO&gt;</span>
-        <span id="connection"><span class="live-indicator"></span>CONNECT 11:47:23</span>
+        <span id="connection"><span class="live-indicator"></span>CONNECT</span>
     </div>
     
     <div class="layout">
         <div class="panel sidebar">
             <div class="panel-title">MENU</div>
-            <div class="menu-item active" onclick="showTab('watchlist')"><span>1 WATCHLIST</span><span class="menu-key">W</span></div>
-            <div class="menu-item" onclick="showTab('news')"><span>2 NEWS</span><span class="menu-key">N</span></div>
+            <div class="menu-item active"><span>1 WATCHLIST</span><span class="menu-key">W</span></div>
+            <div class="menu-item"><span>2 NEWS</span><span class="menu-key">N</span></div>
             <div class="menu-item"><span>3 PORTFOLIO</span><span class="menu-key">P</span></div>
             <div class="menu-item"><span>4 SETUP</span><span class="menu-key">S</span></div>
-            <div class="menu-item"><span>5 FIND</span><span class="menu-key">F</span></div>
         </div>
         
         <div class="panel" style="display: flex; flex-direction: column;">
             <div class="panel-title">SEARCH &lt;GO&gt;</div>
             <div class="search-bar">
-                <input type="text" class="search-input" id="search" placeholder="TYPE SYMBOL... PRESS ENTER" onkeyup="searchSecurities(this.value)">
-                <button onclick="refreshData()" class="chart-btn">↻</button>
+                <input type="text" class="search-input" id="search" placeholder="TYPE SYMBOL..." onkeyup="searchSecurities(this.value)">
+                <button onclick="fetchLiveData()" class="chart-btn">↻</button>
             </div>
             
             <div class="panel-title" style="margin-top: 4px;">MARKET TICKER <span id="last-update" style="float: right; font-weight: normal;"></span></div>
@@ -115,31 +93,29 @@
             <div class="panel-title">QUOTE &lt;GO&gt;</div>
             <div id="detail-symbol" style="font-size: 16px; font-weight: bold;">AAPL</div>
             <div id="detail-name" style="color: var(--bloomberg-dim); font-size: 9px;">APPLE INC</div>
-            <div id="detail-price" style="font-size: 24px; font-weight: bold; margin: 6px 0;">189.45</div>
-            <div id="detail-change" class="pos">+1.23 (+0.65%)</div>
+            <div id="detail-price" style="font-size: 24px; font-weight: bold; margin: 6px 0;">---</div>
+            <div id="detail-change" class="pos">---</div>
             <button class="chart-btn" style="width: 100%; margin: 8px 0;" onclick="showChart()">📈 VIEW CHART</button>
             
             <div class="detail-stats">
-                <div class="stat"><div class="stat-label">OPEN</div><div id="stat-open">188.50</div></div>
-                <div class="stat"><div class="stat-label">HIGH</div><div id="stat-high">190.20</div></div>
-                <div class="stat"><div class="stat-label">LOW</div><div id="stat-low">187.80</div></div>
-                <div class="stat"><div class="stat-label">VOL</div><div id="stat-vol">52.3M</div></div>
-                <div class="stat"><div class="stat-label">MKT CAP</div><div id="stat-cap">2.95T</div></div>
-                <div class="stat"><div class="stat-label">P/E</div><div id="stat-pe">28.52</div></div>
+                <div class="stat"><div class="stat-label">OPEN</div><div id="stat-open">---</div></div>
+                <div class="stat"><div class="stat-label">HIGH</div><div id="stat-high">---</div></div>
+                <div class="stat"><div class="stat-label">LOW</div><div id="stat-low">---</div></div>
+                <div class="stat"><div class="stat-label">VOL</div><div id="stat-vol">---</div></div>
+                <div class="stat"><div class="stat-label">MKT CAP</div><div id="stat-cap">---</div></div>
+                <div class="stat"><div class="stat-label">P/E</div><div id="stat-pe">---</div></div>
             </div>
             
-            <div class="panel-title" style="margin-top: 8px;">
-                LIVE NEWS <span id="news-status" style="float: right; font-weight: normal; font-size: 9px;"></span>
-            </div>
-            <div id="news-feed" style="max-height: 200px; overflow-y: auto;">
-                <div class="news-loading">Loading news...</div>
+            <div class="panel-title" style="margin-top: 8px;">LIVE NEWS</div>
+            <div id="news-feed" style="max-height: 150px; overflow-y: auto;">
+                <div style="color: var(--bloomberg-dim); font-size: 10px;">Loading...</div>
             </div>
         </div>
     </div>
     
     <div class="status">
-        <span>F1 HELP  F2 QUOTE  F3 NEWS  F4 CHRT  F5 ORDR  F6 TEXT  F7 LOAD  F8 PREV</span>
-        <span id="time">11:47:23 HKT</span>
+        <span>F1 HELP  F2 QUOTE  F3 NEWS  F4 CHRT  F5 ORDR  F6 TEXT</span>
+        <span id="time">--:--:--</span>
     </div>
     
     <!-- Chart Modal -->
@@ -154,8 +130,6 @@
                     <button class="chart-btn active" onclick="setTimeframe('1D')">1D</button>
                     <button class="chart-btn" onclick="setTimeframe('1W')">1W</button>
                     <button class="chart-btn" onclick="setTimeframe('1M')">1M</button>
-                    <button class="chart-btn" onclick="setTimeframe('3M')">3M</button>
-                    <button class="chart-btn" onclick="setTimeframe('1Y')">1Y</button>
                 </div>
                 <canvas id="priceChart"></canvas>
             </div>
@@ -165,14 +139,34 @@
     <script>
         let securities = [];
         let chart = null;
-        let currentSymbol = 'AAPL';
-        let newsData = [];
+        let currentSymbol = 'BTC';
+        
+        // CoinGecko API (free, no CORS)
+        const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+        
+        // Map our symbols to CoinGecko IDs
+        const coinGeckoIds = {
+            'BTC': 'bitcoin',
+            'ETH': 'ethereum',
+            'SOL': 'solana',
+            'BNB': 'binancecoin',
+            'XRP': 'ripple',
+            'ADA': 'cardano',
+            'DOGE': 'dogecoin',
+            'AVAX': 'avalanche-2',
+            'DOT': 'polkadot',
+            'LINK': 'chainlink'
+        };
         
         const initialData = {
-            'BTCUSDT': { s: 'BTC', n: 'BITCOIN', p: 69649, c: 2.25, h: 69697, l: 66158, o: 68116, type: 'crypto' },
-            'ETHUSDT': { s: 'ETH', n: 'ETHEREUM', p: 3534, c: 1.89, h: 3580, l: 3420, o: 3468, type: 'crypto' },
-            'SOLUSDT': { s: 'SOL', n: 'SOLANA', p: 178, c: 5.67, h: 182, l: 165, o: 168, type: 'crypto' },
-            'BNBUSDT': { s: 'BNB', n: 'BINANCE', p: 612, c: 0.89, h: 620, l: 600, o: 605, type: 'crypto' },
+            'BTC': { s: 'BTC', n: 'BITCOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'ETH': { s: 'ETH', n: 'ETHEREUM', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'SOL': { s: 'SOL', n: 'SOLANA', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'BNB': { s: 'BNB', n: 'BINANCE', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'XRP': { s: 'XRP', n: 'XRP', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'ADA': { s: 'ADA', n: 'CARDANO', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'DOGE': { s: 'DOGE', n: 'DOGECOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            'AVAX': { s: 'AVAX', n: 'AVALANCHE', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'AAPL': { s: 'AAPL', n: 'APPLE INC', p: 189.45, c: 0.65, h: 190.20, l: 187.80, o: 188.50, mc: '2.95T', pe: 28.5, type: 'us' },
             'NVDA': { s: 'NVDA', n: 'NVIDIA CORP', p: 892.40, c: 2.34, h: 898.50, l: 870.00, o: 875.00, mc: '2.20T', pe: 65.2, type: 'us' },
             'MSFT': { s: 'MSFT', n: 'MICROSOFT', p: 415.20, c: 1.12, h: 417.80, l: 408.20, o: 410.50, mc: '3.09T', pe: 35.8, type: 'us' },
@@ -180,80 +174,45 @@
             'AMZN': { s: 'AMZN', n: 'AMAZON', p: 228.50, c: 1.45, h: 230.50, l: 223.80, o: 225.00, mc: '2.37T', pe: 62.3, type: 'us' },
             'META': { s: 'META', n: 'META PLATFORMS', p: 592.30, c: 2.10, h: 595.50, l: 575.20, o: 580.00, mc: '1.52T', pe: 32.8, type: 'us' },
             'TSLA': { s: 'TSLA', n: 'TESLA', p: 245.60, c: -2.12, h: 252.30, l: 243.50, o: 250.00, mc: '780B', pe: 78.5, type: 'us' },
+            'AMD': { s: 'AMD', n: 'AMD INC', p: 178.90, c: 0.78, h: 181.20, l: 176.80, o: 177.50, mc: '289B', pe: 280.5, type: 'us' },
             '0700.HK': { s: '0700.HK', n: 'TENCENT', p: 385.20, c: -1.12, h: 390.00, l: 383.20, o: 388.50, mc: '3.6T', pe: 18.2, type: 'hk' },
             '9988.HK': { s: '9988.HK', n: 'ALIBABA', p: 142.50, c: 0.34, h: 144.50, l: 141.20, o: 142.00, mc: '1.8T', pe: 22.5, type: 'hk' },
-            'GC=F': { s: 'GC', n: 'GOLD FUT', p: 2342.60, c: 0.32, h: 2350.00, l: 2328.50, o: 2335.00, type: 'commodity' },
+            'GC': { s: 'GC', n: 'GOLD FUT', p: 2342.60, c: 0.32, h: 2350.00, l: 2328.50, o: 2335.00, type: 'commodity' },
         };
         
-        // Fetch live news (using mock for demo - replace with real API)
-        async function fetchNews() {
-            document.getElementById('news-status').innerText = 'UPDATING...';
+        async function fetchLiveData() {
+            document.getElementById('last-update').innerText = 'Loading...';
             
-            // Mock news for demo - in production, use NewsAPI or similar
-            const mockNews = [
-                { title: "Bitcoin surges past $69K as institutional demand grows", source: "CoinDesk", time: "2 min ago", symbol: "BTC" },
-                { title: "NVIDIA reports record revenue, AI chip demand strong", source: "Reuters", time: "5 min ago", symbol: "NVDA" },
-                { title: "Fed signals potential rate cuts in 2026", source: "Bloomberg", time: "12 min ago", symbol: "" },
-                { title: "Apple unveils new AI features for iPhone", source: "CNBC", time: "18 min ago", symbol: "AAPL" },
-                { title: "Ethereum ETF sees $500M inflows this week", source: "CoinTelegraph", time: "22 min ago", symbol: "ETH" },
-                { title: "Tesla China sales drop amid increased competition", source: "Bloomberg", time: "35 min ago", symbol: "TSLA" },
-                { title: "Microsoft cloud revenue beats expectations", source: "WSJ", time: "42 min ago", symbol: "MSFT" },
-                { title: "Gold reaches 2-week high on safe haven demand", source: "Kitco", time: "55 min ago", symbol: "GC" },
-                { title: "Meta announces new AI assistant features", source: "TechCrunch", time: "1 hour ago", symbol: "META" },
-                { title: "Semiconductor stocks rally on AI demand", source: "CNBC", time: "1 hour ago", symbol: "" },
-            ];
-            
-            newsData = mockNews;
-            renderNews();
-            document.getElementById('news-status').innerText = 'LIVE';
-        }
-        
-        function renderNews(filter = '') {
-            const container = document.getElementById('news-feed');
-            let filtered = newsData;
-            
-            if (filter) {
-                filtered = newsData.filter(n => 
-                    n.title.toLowerCase().includes(filter.toLowerCase()) ||
-                    n.symbol.toLowerCase().includes(filter.toLowerCase())
-                );
+            // Fetch crypto from CoinGecko
+            const ids = Object.values(coinGeckoIds).join(',');
+            try {
+                const res = await fetch(`${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`);
+                const data = await res.json();
+                
+                // Update crypto prices
+                for (const [sym, geckoId] of Object.entries(coinGeckoIds)) {
+                    if (data[geckoId]) {
+                        initialData[sym].p = data[geckoId].usd;
+                        initialData[sym].c = data[geckoId].usd_24h_change || 0;
+                        initialData[sym].h = data[geckoId].usd * 1.02;
+                        initialData[sym].l = data[geckoId].usd * 0.98;
+                        initialData[sym].o = data[geckoId].usd * 0.99;
+                    }
+                }
+            } catch (e) {
+                console.log('CoinGecko error:', e);
             }
             
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="news-loading">No news available</div>';
-                return;
-            }
+            securities = Object.values(initialData);
+            renderTable();
             
-            container.innerHTML = filtered.map(n => `
-                <div class="news-item" onclick="select('${n.symbol || 'AAPL'}')">
-                    <div class="news-headline">${n.title}</div>
-                    <div class="news-meta">
-                        <span class="news-source">${n.source}</span> · ${n.time}
-                        ${n.symbol ? ` · <span style="color: var(--bloomberg)">$${n.symbol}</span>` : ''}
-                    </div>
-                </div>
-            `).join('');
+            const now = new Date();
+            document.getElementById('last-update').innerText = 'Updated: ' + now.toLocaleTimeString();
+            document.getElementById('connection').innerHTML = '<span class="live-indicator"></span>LIVE';
         }
         
-        function generateChartData(basePrice, timeframe) {
-            let points = timeframe === '1D' ? 24 : timeframe === '1W' ? 7 : timeframe === '1M' ? 30 : timeframe === '3M' ? 90 : 365;
-            points = Math.min(points, 100);
-            
-            const labels = [];
-            const data = [];
-            let price = basePrice * 0.95;
-            
-            for (let i = 0; i < points; i++) {
-                price = price + (Math.random() - 0.48) * (basePrice * 0.02);
-                data.push(price);
-            }
-            data[data.length - 1] = basePrice;
-            
-            return { labels, data };
-        }
-        
-        function fmtP(p) { return p >= 1 ? p.toFixed(2) : p.toFixed(4); }
-        function fmtC(c) { return (c >= 0 ? '+' : '') + c.toFixed(2) + '%'; }
+        function fmtP(p) { return p >= 1 ? p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : p.toFixed(4); }
+        function fmtC(c) { return (c >= 0 ? '+' : '') + (c || 0).toFixed(2) + '%'; }
         
         function getBadge(type) {
             if (type === 'us') return '<span class="badge badge-us">US</span>';
@@ -262,38 +221,19 @@
             return '';
         }
         
-        async function fetchLiveData() {
-            const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'];
-            for (const sym of symbols) {
-                try {
-                    const res = await fetch('http://localhost:8081/binance?symbol=' + sym);
-                    const data = await res.json();
-                    if (initialData[sym]) {
-                        initialData[sym].p = parseFloat(data.lastPrice);
-                        initialData[sym].c = parseFloat(data.priceChangePercent);
-                        initialData[sym].h = parseFloat(data.highPrice);
-                        initialData[sym].l = parseFloat(data.lowPrice);
-                    }
-                } catch (e) { console.log('Using cached', sym); }
-            }
-            securities = Object.values(initialData);
-            renderTable();
-            document.getElementById('last-update').innerText = 'Updated: ' + new Date().toLocaleTimeString();
-        }
-        
         function renderTable(data = securities) {
             document.getElementById('ticker').innerHTML = data.slice(0,8).map(d => 
-                `<span class="ticker-item" onclick="select('${d.s}')"><b>${d.s}</b> ${fmtP(d.p)} <span class="${d.c >= 0 ? 'pos' : 'neg'}">${fmtC(d.c)}</span></span>`
+                `<span class="ticker-item" onclick="select('${d.s}')"><b>${d.s}</b> $${fmtP(d.p)} <span class="${d.c >= 0 ? 'pos' : 'neg'}">${fmtC(d.c)}</span></span>`
             ).join('');
             
             document.getElementById('securities').innerHTML = data.map(d => `
                 <tr onclick="select('${d.s}')">
                     <td><b>${d.s}</b> ${getBadge(d.type)}</td>
                     <td>${d.n}</td>
-                    <td class="num">${fmtP(d.p)}</td>
+                    <td class="num">$${fmtP(d.p)}</td>
                     <td class="num ${d.c >= 0 ? 'pos' : 'neg'}">${fmtC(d.c)}</td>
-                    <td class="num">${fmtP(d.h)}</td>
-                    <td class="num">${fmtP(d.l)}</td>
+                    <td class="num">$${fmtP(d.h)}</td>
+                    <td class="num">$${fmtP(d.l)}</td>
                 </tr>
             `).join('');
         }
@@ -305,19 +245,18 @@
             
             document.getElementById('detail-symbol').innerHTML = `${d.s} ${getBadge(d.type)}`;
             document.getElementById('detail-name').innerText = d.n;
-            document.getElementById('detail-price').innerText = fmtP(d.p);
+            document.getElementById('detail-price').innerText = d.p ? '$' + fmtP(d.p) : '---';
             
             const chg = document.getElementById('detail-change');
-            const changeVal = d.c >= 0 ? '+' + ((d.p * d.c) / 100).toFixed(2) : ((d.p * d.c) / 100).toFixed(2);
-            chg.innerText = `${changeVal} (${fmtC(d.c)})`;
+            chg.innerText = d.c ? fmtC(d.c) : '---';
             chg.className = d.c >= 0 ? 'pos' : 'neg';
             
-            document.getElementById('stat-open').innerText = d.o;
-            document.getElementById('stat-high').innerText = d.h;
-            document.getElementById('stat-low').innerText = d.l;
-            document.getElementById('stat-vol').innerText = d.v || 'N/A';
-            document.getElementById('stat-cap').innerText = d.mc || 'N/A';
-            document.getElementById('stat-pe').innerText = d.pe || 'N/A';
+            document.getElementById('stat-open').innerText = d.o ? '$' + fmtP(d.o) : '---';
+            document.getElementById('stat-high').innerText = d.h ? '$' + fmtP(d.h) : '---';
+            document.getElementById('stat-low').innerText = d.l ? '$' + fmtP(d.l) : '---';
+            document.getElementById('stat-vol').innerText = d.v || '---';
+            document.getElementById('stat-cap').innerText = d.mc || '---';
+            document.getElementById('stat-pe').innerText = d.pe || '---';
         }
         
         function searchSecurities(query) {
@@ -330,8 +269,8 @@
         function showChart() {
             const d = securities.find(x => x.s === currentSymbol);
             if (!d) return;
-            document.getElementById('chart-title').innerText = `${d.s} - ${d.n}`;
-            renderChart(d.p, '1D');
+            document.getElementById('chart-title').innerText = d.s + ' - ' + d.n;
+            renderChart(d.p || 100);
             document.getElementById('chartModal').classList.add('active');
         }
         
@@ -341,21 +280,29 @@
             document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             const d = securities.find(x => x.s === currentSymbol);
-            if (d) renderChart(d.p, tf);
+            if (d) renderChart(d.p || 100);
         }
         
-        function renderChart(basePrice, timeframe) {
+        function renderChart(basePrice) {
             const ctx = document.getElementById('priceChart').getContext('2d');
-            const chartData = generateChartData(basePrice, timeframe);
+            const points = 50;
+            const data = [];
+            let price = basePrice * 0.95;
+            
+            for (let i = 0; i < points; i++) {
+                price = price + (Math.random() - 0.48) * (basePrice * 0.02);
+                data.push(price);
+            }
+            data[data.length - 1] = basePrice;
             
             if (chart) chart.destroy();
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: chartData.labels,
+                    labels: data.map((_, i) => i),
                     datasets: [{
                         label: 'Price',
-                        data: chartData.data,
+                        data: data,
                         borderColor: '#ff9900',
                         backgroundColor: 'rgba(255, 153, 0, 0.1)',
                         fill: true,
@@ -375,40 +322,43 @@
             });
         }
         
-        function refreshData() { fetchLiveData(); fetchNews(); }
-        
-        function showTab(tab) {
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            event.target.closest('.menu-item').classList.add('active');
-            if (tab === 'news') fetchNews();
+        // Mock news for demo
+        function loadNews() {
+            const news = [
+                { title: "Bitcoin surges on ETF inflows", source: "CoinDesk", time: "2m ago" },
+                { title: "Ethereum network upgrade planned", source: "Ethereum.org", time: "15m ago" },
+                { title: "Solana DeFi hits new highs", source: "DeFi Llama", time: "32m ago" },
+                { title: "Fed signals rate decision", source: "Reuters", time: "1h ago" },
+                { title: "Tech stocks rally on AI demand", source: "Bloomberg", time: "2h ago" }
+            ];
+            
+            document.getElementById('news-feed').innerHTML = news.map(n => `
+                <div class="news-item">
+                    <div class="news-headline">${n.title}</div>
+                    <div class="news-meta">${n.source} · ${n.time}</div>
+                </div>
+            `).join('');
         }
         
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeChart();
-            if (e.key === 'Enter') {
-                const s = document.getElementById('search').value;
-                if (s) select(s.toUpperCase());
-            }
-        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChart(); });
         
         function updateTime() {
-            const t = new Date().toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('time').innerText = t + ' HKT';
-            document.getElementById('connection').innerHTML = `<span class="live-indicator"></span>CONNECT ${t}`;
+            document.getElementById('time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }) + ' HKT';
         }
         
         // Init
         securities = Object.values(initialData);
         renderTable();
-        select('AAPL');
+        select('BTC');
         updateTime();
         setInterval(updateTime, 1000);
         
-        // Load data
+        // Fetch live data on load
         fetchLiveData();
-        fetchNews();
+        loadNews();
+        
+        // Refresh every 30 seconds
         setInterval(fetchLiveData, 30000);
-        setInterval(fetchNews, 60000);
     </script>
 </body>
 </html>
