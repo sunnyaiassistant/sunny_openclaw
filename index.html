@@ -14,7 +14,7 @@
         .panel-title { background: var(--bloomberg); color: black; padding: 2px 6px; font-weight: bold; font-size: 10px; margin: -4px -4px 4px -4px; }
         .sidebar { font-size: 10px; }
         .menu-item { padding: 4px 8px; cursor: pointer; display: flex; justify-content: space-between; }
-        .menu-item:hover, .menu-item.active { background: var(--highlight); }
+        .menu-item:hover { background: var(--highlight); }
         .menu-key { color: var(--bloomberg-dim); font-size: 9px; }
         .search-bar { display: flex; gap: 4px; margin-bottom: 6px; }
         .search-input { background: var(--bg); border: 1px solid var(--bloomberg-dim); color: var(--bloomberg); padding: 3px 6px; font-family: inherit; font-size: 10px; width: 100%; }
@@ -30,15 +30,14 @@
         .pos { color: var(--green); }
         .neg { color: var(--red); }
         .badge { font-size: 8px; padding: 1px 4px; border-radius: 2px; margin-left: 4px; }
+        .badge-crypto { background: #330066; }
         .badge-us { background: #003366; }
         .badge-hk { background: #660000; }
-        .badge-crypto { background: #330066; }
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0d0d0d; border: 2px solid var(--bloomberg); width: 90%; max-width: 900px; max-height: 90vh; overflow: auto; }
         .modal-header { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--bloomberg); }
         .modal-close { cursor: pointer; font-size: 18px; }
-        .modal-close:hover { color: #ffcc00; }
         .chart-container { padding: 12px; height: 300px; }
         .chart-controls { display: flex; gap: 8px; margin-bottom: 12px; }
         .chart-btn { background: var(--bg); border: 1px solid var(--bloomberg-dim); color: var(--bloomberg); padding: 4px 12px; cursor: pointer; font-family: inherit; font-size: 10px; }
@@ -53,7 +52,6 @@
         ::-webkit-scrollbar-track { background: var(--bg); }
         .news-item { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 10px; cursor: pointer; }
         .news-item:hover { background: var(--highlight); }
-        .news-headline { margin-bottom: 2px; }
         .news-meta { font-size: 9px; color: var(--bloomberg-dim); }
     </style>
 </head>
@@ -66,10 +64,9 @@
     <div class="layout">
         <div class="panel sidebar">
             <div class="panel-title">MENU</div>
-            <div class="menu-item active"><span>1 WATCHLIST</span><span class="menu-key">W</span></div>
+            <div class="menu-item"><span>1 WATCHLIST</span><span class="menu-key">W</span></div>
             <div class="menu-item"><span>2 NEWS</span><span class="menu-key">N</span></div>
             <div class="menu-item"><span>3 PORTFOLIO</span><span class="menu-key">P</span></div>
-            <div class="menu-item"><span>4 SETUP</span><span class="menu-key">S</span></div>
         </div>
         
         <div class="panel" style="display: flex; flex-direction: column;">
@@ -91,8 +88,8 @@
         
         <div class="panel">
             <div class="panel-title">QUOTE &lt;GO&gt;</div>
-            <div id="detail-symbol" style="font-size: 16px; font-weight: bold;">AAPL</div>
-            <div id="detail-name" style="color: var(--bloomberg-dim); font-size: 9px;">APPLE INC</div>
+            <div id="detail-symbol" style="font-size: 16px; font-weight: bold;">---</div>
+            <div id="detail-name" style="color: var(--bloomberg-dim); font-size: 9px;">---</div>
             <div id="detail-price" style="font-size: 24px; font-weight: bold; margin: 6px 0;">---</div>
             <div id="detail-change" class="pos">---</div>
             <button class="chart-btn" style="width: 100%; margin: 8px 0;" onclick="showChart()">📈 VIEW CHART</button>
@@ -101,15 +98,13 @@
                 <div class="stat"><div class="stat-label">OPEN</div><div id="stat-open">---</div></div>
                 <div class="stat"><div class="stat-label">HIGH</div><div id="stat-high">---</div></div>
                 <div class="stat"><div class="stat-label">LOW</div><div id="stat-low">---</div></div>
-                <div class="stat"><div class="stat-label">VOL</div><div id="stat-vol">---</div></div>
                 <div class="stat"><div class="stat-label">MKT CAP</div><div id="stat-cap">---</div></div>
                 <div class="stat"><div class="stat-label">P/E</div><div id="stat-pe">---</div></div>
+                <div class="stat"><div class="stat-label">VOL</div><div id="stat-vol">---</div></div>
             </div>
             
             <div class="panel-title" style="margin-top: 8px;">LIVE NEWS</div>
-            <div id="news-feed" style="max-height: 150px; overflow-y: auto;">
-                <div style="color: var(--bloomberg-dim); font-size: 10px;">Loading...</div>
-            </div>
+            <div id="news-feed" style="max-height: 150px; overflow-y: auto;"></div>
         </div>
     </div>
     
@@ -118,11 +113,10 @@
         <span id="time">--:--:--</span>
     </div>
     
-    <!-- Chart Modal -->
     <div class="modal" id="chartModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span id="chart-title" style="font-weight: bold;">AAPL</span>
+                <span id="chart-title" style="font-weight: bold;">CHART</span>
                 <span class="modal-close" onclick="closeChart()">×</span>
             </div>
             <div class="chart-container">
@@ -141,24 +135,11 @@
         let chart = null;
         let currentSymbol = 'BTC';
         
-        // CoinGecko API (free, no CORS)
-        const COINGECKO_API = 'https://api.coingecko.com/api/v3';
-        
-        // Map our symbols to CoinGecko IDs
-        const coinGeckoIds = {
-            'BTC': 'bitcoin',
-            'ETH': 'ethereum',
-            'SOL': 'solana',
-            'BNB': 'binancecoin',
-            'XRP': 'ripple',
-            'ADA': 'cardano',
-            'DOGE': 'dogecoin',
-            'AVAX': 'avalanche-2',
-            'DOT': 'polkadot',
-            'LINK': 'chainlink'
-        };
+        // CORS proxy for Yahoo Finance
+        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         
         const initialData = {
+            // Crypto (from CoinGecko - works directly)
             'BTC': { s: 'BTC', n: 'BITCOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'ETH': { s: 'ETH', n: 'ETHEREUM', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'SOL': { s: 'SOL', n: 'SOLANA', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
@@ -166,7 +147,7 @@
             'XRP': { s: 'XRP', n: 'XRP', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'ADA': { s: 'ADA', n: 'CARDANO', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'DOGE': { s: 'DOGE', n: 'DOGECOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
-            'AVAX': { s: 'AVAX', n: 'AVALANCHE', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
+            // US Stocks (will use mock data - real API needs key)
             'AAPL': { s: 'AAPL', n: 'APPLE INC', p: 189.45, c: 0.65, h: 190.20, l: 187.80, o: 188.50, mc: '2.95T', pe: 28.5, type: 'us' },
             'NVDA': { s: 'NVDA', n: 'NVIDIA CORP', p: 892.40, c: 2.34, h: 898.50, l: 870.00, o: 875.00, mc: '2.20T', pe: 65.2, type: 'us' },
             'MSFT': { s: 'MSFT', n: 'MICROSOFT', p: 415.20, c: 1.12, h: 417.80, l: 408.20, o: 410.50, mc: '3.09T', pe: 35.8, type: 'us' },
@@ -175,21 +156,26 @@
             'META': { s: 'META', n: 'META PLATFORMS', p: 592.30, c: 2.10, h: 595.50, l: 575.20, o: 580.00, mc: '1.52T', pe: 32.8, type: 'us' },
             'TSLA': { s: 'TSLA', n: 'TESLA', p: 245.60, c: -2.12, h: 252.30, l: 243.50, o: 250.00, mc: '780B', pe: 78.5, type: 'us' },
             'AMD': { s: 'AMD', n: 'AMD INC', p: 178.90, c: 0.78, h: 181.20, l: 176.80, o: 177.50, mc: '289B', pe: 280.5, type: 'us' },
+            // HK Stocks
             '0700.HK': { s: '0700.HK', n: 'TENCENT', p: 385.20, c: -1.12, h: 390.00, l: 383.20, o: 388.50, mc: '3.6T', pe: 18.2, type: 'hk' },
             '9988.HK': { s: '9988.HK', n: 'ALIBABA', p: 142.50, c: 0.34, h: 144.50, l: 141.20, o: 142.00, mc: '1.8T', pe: 22.5, type: 'hk' },
-            'GC': { s: 'GC', n: 'GOLD FUT', p: 2342.60, c: 0.32, h: 2350.00, l: 2328.50, o: 2335.00, type: 'commodity' },
+        };
+        
+        // CoinGecko for crypto
+        const coinGeckoIds = {
+            'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'BNB': 'binancecoin',
+            'XRP': 'ripple', 'ADA': 'cardano', 'DOGE': 'dogecoin'
         };
         
         async function fetchLiveData() {
             document.getElementById('last-update').innerText = 'Loading...';
             
             // Fetch crypto from CoinGecko
-            const ids = Object.values(coinGeckoIds).join(',');
             try {
-                const res = await fetch(`${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`);
+                const ids = Object.values(coinGeckoIds).join(',');
+                const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
                 const data = await res.json();
                 
-                // Update crypto prices
                 for (const [sym, geckoId] of Object.entries(coinGeckoIds)) {
                     if (data[geckoId]) {
                         initialData[sym].p = data[geckoId].usd;
@@ -200,14 +186,13 @@
                     }
                 }
             } catch (e) {
-                console.log('CoinGecko error:', e);
+                console.log('Crypto fetch error:', e);
             }
             
             securities = Object.values(initialData);
             renderTable();
             
-            const now = new Date();
-            document.getElementById('last-update').innerText = 'Updated: ' + now.toLocaleTimeString();
+            document.getElementById('last-update').innerText = 'Updated: ' + new Date().toLocaleTimeString();
             document.getElementById('connection').innerHTML = '<span class="live-indicator"></span>LIVE';
         }
         
@@ -222,7 +207,7 @@
         }
         
         function renderTable(data = securities) {
-            document.getElementById('ticker').innerHTML = data.slice(0,8).map(d => 
+            document.getElementById('ticker').innerHTML = data.slice(0,10).map(d => 
                 `<span class="ticker-item" onclick="select('${d.s}')"><b>${d.s}</b> $${fmtP(d.p)} <span class="${d.c >= 0 ? 'pos' : 'neg'}">${fmtC(d.c)}</span></span>`
             ).join('');
             
@@ -254,9 +239,9 @@
             document.getElementById('stat-open').innerText = d.o ? '$' + fmtP(d.o) : '---';
             document.getElementById('stat-high').innerText = d.h ? '$' + fmtP(d.h) : '---';
             document.getElementById('stat-low').innerText = d.l ? '$' + fmtP(d.l) : '---';
-            document.getElementById('stat-vol').innerText = d.v || '---';
             document.getElementById('stat-cap').innerText = d.mc || '---';
             document.getElementById('stat-pe').innerText = d.pe || '---';
+            document.getElementById('stat-vol').innerText = d.v || '---';
         }
         
         function searchSecurities(query) {
@@ -285,11 +270,9 @@
         
         function renderChart(basePrice) {
             const ctx = document.getElementById('priceChart').getContext('2d');
-            const points = 50;
             const data = [];
             let price = basePrice * 0.95;
-            
-            for (let i = 0; i < points; i++) {
+            for (let i = 0; i < 50; i++) {
                 price = price + (Math.random() - 0.48) * (basePrice * 0.02);
                 data.push(price);
             }
@@ -300,41 +283,24 @@
                 type: 'line',
                 data: {
                     labels: data.map((_, i) => i),
-                    datasets: [{
-                        label: 'Price',
-                        data: data,
-                        borderColor: '#ff9900',
-                        backgroundColor: 'rgba(255, 153, 0, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0
-                    }]
+                    datasets: [{ label: 'Price', data: data, borderColor: '#ff9900', backgroundColor: 'rgba(255,153,0,0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { grid: { color: '#331a00' }, ticks: { color: '#cc7a00' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#331a00' }, ticks: { color: '#cc7a00' } } } }
             });
         }
         
-        // Mock news for demo
+        // Mock news
         function loadNews() {
             const news = [
-                { title: "Bitcoin surges on ETF inflows", source: "CoinDesk", time: "2m ago" },
-                { title: "Ethereum network upgrade planned", source: "Ethereum.org", time: "15m ago" },
-                { title: "Solana DeFi hits new highs", source: "DeFi Llama", time: "32m ago" },
-                { title: "Fed signals rate decision", source: "Reuters", time: "1h ago" },
-                { title: "Tech stocks rally on AI demand", source: "Bloomberg", time: "2h ago" }
+                { title: "Bitcoin ETF inflows surge", source: "CoinDesk", time: "2m" },
+                { title: "NVIDIA beats earnings", source: "Reuters", time: "15m" },
+                { title: "Fed signals rate decision", source: "Bloomberg", time: "32m" },
+                { title: "Ethereum upgrade planned", source: "Ethereum.org", time: "1h" },
+                { title: "Tech stocks rally", source: "CNBC", time: "2h" }
             ];
-            
             document.getElementById('news-feed').innerHTML = news.map(n => `
                 <div class="news-item">
-                    <div class="news-headline">${n.title}</div>
+                    <div>${n.title}</div>
                     <div class="news-meta">${n.source} · ${n.time}</div>
                 </div>
             `).join('');
@@ -346,18 +312,14 @@
             document.getElementById('time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }) + ' HKT';
         }
         
-        // Init
         securities = Object.values(initialData);
         renderTable();
         select('BTC');
         updateTime();
         setInterval(updateTime, 1000);
         
-        // Fetch live data on load
         fetchLiveData();
         loadNews();
-        
-        // Refresh every 30 seconds
         setInterval(fetchLiveData, 30000);
     </script>
 </body>
