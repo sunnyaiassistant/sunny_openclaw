@@ -13,8 +13,7 @@
         .panel { background: var(--bg); border: 1px solid var(--border); margin: 1px; padding: 4px; overflow: hidden; }
         .panel-title { background: var(--bloomberg); color: black; padding: 2px 6px; font-weight: bold; font-size: 10px; margin: -4px -4px 4px -4px; }
         .sidebar { font-size: 10px; }
-        .menu-item { padding: 4px 8px; cursor: pointer; display: flex; justify-content: space-between; }
-        .menu-item:hover { background: var(--highlight); }
+        .menu-item { padding: 4px 8px; display: flex; justify-content: space-between; }
         .menu-key { color: var(--bloomberg-dim); font-size: 9px; }
         .search-bar { display: flex; gap: 4px; margin-bottom: 6px; }
         .search-input { background: var(--bg); border: 1px solid var(--bloomberg-dim); color: var(--bloomberg); padding: 3px 6px; font-family: inherit; font-size: 10px; width: 100%; }
@@ -52,7 +51,9 @@
         ::-webkit-scrollbar-track { background: var(--bg); }
         .news-item { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 10px; cursor: pointer; }
         .news-item:hover { background: var(--highlight); }
+        .news-headline { margin-bottom: 2px; }
         .news-meta { font-size: 9px; color: var(--bloomberg-dim); }
+        .news-source { color: var(--bloomberg); }
     </style>
 </head>
 <body>
@@ -103,13 +104,13 @@
                 <div class="stat"><div class="stat-label">VOL</div><div id="stat-vol">---</div></div>
             </div>
             
-            <div class="panel-title" style="margin-top: 8px;">LIVE NEWS</div>
+            <div class="panel-title" style="margin-top: 8px;">LIVE NEWS <span id="news-status" style="float: right; font-weight: normal; font-size: 9px;"></span></div>
             <div id="news-feed" style="max-height: 150px; overflow-y: auto;"></div>
         </div>
     </div>
     
     <div class="status">
-        <span>F1 HELP  F2 QUOTE  F3 NEWS  F4 CHRT  F5 ORDR  F6 TEXT</span>
+        <span>F1 HELP  F2 QUOTE  F3 NEWS  F4 CHRT  F5 ORDR</span>
         <span id="time">--:--:--</span>
     </div>
     
@@ -135,11 +136,10 @@
         let chart = null;
         let currentSymbol = 'BTC';
         
-        // CORS proxy for Yahoo Finance
-        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+        // Free news API (CryptoCompare - no key needed for basic use)
+        const NEWS_API = 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN';
         
         const initialData = {
-            // Crypto (from CoinGecko - works directly)
             'BTC': { s: 'BTC', n: 'BITCOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'ETH': { s: 'ETH', n: 'ETHEREUM', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'SOL': { s: 'SOL', n: 'SOLANA', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
@@ -147,7 +147,6 @@
             'XRP': { s: 'XRP', n: 'XRP', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'ADA': { s: 'ADA', n: 'CARDANO', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
             'DOGE': { s: 'DOGE', n: 'DOGECOIN', p: 0, c: 0, h: 0, l: 0, o: 0, type: 'crypto' },
-            // US Stocks (will use mock data - real API needs key)
             'AAPL': { s: 'AAPL', n: 'APPLE INC', p: 189.45, c: 0.65, h: 190.20, l: 187.80, o: 188.50, mc: '2.95T', pe: 28.5, type: 'us' },
             'NVDA': { s: 'NVDA', n: 'NVIDIA CORP', p: 892.40, c: 2.34, h: 898.50, l: 870.00, o: 875.00, mc: '2.20T', pe: 65.2, type: 'us' },
             'MSFT': { s: 'MSFT', n: 'MICROSOFT', p: 415.20, c: 1.12, h: 417.80, l: 408.20, o: 410.50, mc: '3.09T', pe: 35.8, type: 'us' },
@@ -156,16 +155,11 @@
             'META': { s: 'META', n: 'META PLATFORMS', p: 592.30, c: 2.10, h: 595.50, l: 575.20, o: 580.00, mc: '1.52T', pe: 32.8, type: 'us' },
             'TSLA': { s: 'TSLA', n: 'TESLA', p: 245.60, c: -2.12, h: 252.30, l: 243.50, o: 250.00, mc: '780B', pe: 78.5, type: 'us' },
             'AMD': { s: 'AMD', n: 'AMD INC', p: 178.90, c: 0.78, h: 181.20, l: 176.80, o: 177.50, mc: '289B', pe: 280.5, type: 'us' },
-            // HK Stocks
             '0700.HK': { s: '0700.HK', n: 'TENCENT', p: 385.20, c: -1.12, h: 390.00, l: 383.20, o: 388.50, mc: '3.6T', pe: 18.2, type: 'hk' },
             '9988.HK': { s: '9988.HK', n: 'ALIBABA', p: 142.50, c: 0.34, h: 144.50, l: 141.20, o: 142.00, mc: '1.8T', pe: 22.5, type: 'hk' },
         };
         
-        // CoinGecko for crypto
-        const coinGeckoIds = {
-            'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'BNB': 'binancecoin',
-            'XRP': 'ripple', 'ADA': 'cardano', 'DOGE': 'dogecoin'
-        };
+        const coinGeckoIds = { 'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'BNB': 'binancecoin', 'XRP': 'ripple', 'ADA': 'cardano', 'DOGE': 'dogecoin' };
         
         async function fetchLiveData() {
             document.getElementById('last-update').innerText = 'Loading...';
@@ -185,15 +179,47 @@
                         initialData[sym].o = data[geckoId].usd * 0.99;
                     }
                 }
-            } catch (e) {
-                console.log('Crypto fetch error:', e);
-            }
+            } catch (e) { console.log('Crypto error:', e); }
             
             securities = Object.values(initialData);
             renderTable();
             
             document.getElementById('last-update').innerText = 'Updated: ' + new Date().toLocaleTimeString();
             document.getElementById('connection').innerHTML = '<span class="live-indicator"></span>LIVE';
+        }
+        
+        // REAL NEWS from CryptoCompare API
+        async function fetchNews() {
+            document.getElementById('news-status').innerText = 'Loading...';
+            
+            try {
+                const res = await fetch(NEWS_API);
+                const data = await res.json();
+                
+                if (data.Data) {
+                    const news = data.Data.slice(0, 15);
+                    document.getElementById('news-feed').innerHTML = news.map(n => `
+                        <div class="news-item" onclick="window.open('${n.url}', '_blank')">
+                            <div class="news-headline">${n.title}</div>
+                            <div class="news-meta">
+                                <span class="news-source">${n.source_info.name}</span> · ${getTimeAgo(n.published_on)}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('news-status').innerText = 'LIVE';
+                }
+            } catch (e) {
+                console.log('News error:', e);
+                document.getElementById('news-feed').innerHTML = '<div style="color: var(--bloomberg-dim); font-size: 10px;">Unable to load news</div>';
+            }
+        }
+        
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor(Date.now() / 1000) - timestamp;
+            if (seconds < 60) return seconds + 's ago';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
         }
         
         function fmtP(p) { return p >= 1 ? p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : p.toFixed(4); }
@@ -289,23 +315,6 @@
             });
         }
         
-        // Mock news
-        function loadNews() {
-            const news = [
-                { title: "Bitcoin ETF inflows surge", source: "CoinDesk", time: "2m" },
-                { title: "NVIDIA beats earnings", source: "Reuters", time: "15m" },
-                { title: "Fed signals rate decision", source: "Bloomberg", time: "32m" },
-                { title: "Ethereum upgrade planned", source: "Ethereum.org", time: "1h" },
-                { title: "Tech stocks rally", source: "CNBC", time: "2h" }
-            ];
-            document.getElementById('news-feed').innerHTML = news.map(n => `
-                <div class="news-item">
-                    <div>${n.title}</div>
-                    <div class="news-meta">${n.source} · ${n.time}</div>
-                </div>
-            `).join('');
-        }
-        
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChart(); });
         
         function updateTime() {
@@ -319,8 +328,9 @@
         setInterval(updateTime, 1000);
         
         fetchLiveData();
-        loadNews();
+        fetchNews();
         setInterval(fetchLiveData, 30000);
+        setInterval(fetchNews, 60000);
     </script>
 </body>
 </html>
