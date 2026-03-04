@@ -11,7 +11,7 @@ A Bloomberg-style trading terminal with live data, interactive charts, and real-
 
 ## Access
 
-The dashboard is published at: **https://r3dr0cket.github.io/sunny_openclaw/**
+The dashboard is published at: **https://sunnyaiassistant.github.io/sunny_openclaw/**
 
 ## Local Development
 
